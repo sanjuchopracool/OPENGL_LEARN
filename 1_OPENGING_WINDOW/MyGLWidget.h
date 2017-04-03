@@ -4,8 +4,10 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 
-#include "../Utils/GLWidget.h"
+#include <GLWidget.h>
+#include <memory>
 
+class OpenGLShaderProgram;
 class MyGLWidget : public GLWidget
 {
 public:
@@ -18,8 +20,8 @@ protected:
 
 private:
     GLuint      texture;
-    GLuint      program;
     GLuint      vao;
+    std::unique_ptr<OpenGLShaderProgram> mProgram;
 };
 
 #endif // MYGLWIDGET_H

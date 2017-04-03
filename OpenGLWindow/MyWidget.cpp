@@ -43,7 +43,7 @@ static const char * vs_source[] =
 
 static const char * fs_source[] =
 {
-    "#version 420 core                                                              \n"
+    "#version 430 core                                                              \n"
     "                                                                               \n"
     "uniform sampler2D s;                                                           \n"
     "                                                                               \n"
@@ -51,8 +51,8 @@ static const char * fs_source[] =
     "                                                                               \n"
     "void main(void)                                                                \n"
     "{                                                                              \n"
-    "    color = texture(s, gl_FragCoord.x*gl_FragCoord.y / textureSize(s, 0));                   \n"
-    "}                                                                              \n"
+    "    color = texture(s, gl_FragCoord.xy / textureSize(s, 0));                   \n"
+    "}                                                                            \n"
 };
 #include <string>
 static void print_shader_log(GLuint shader)

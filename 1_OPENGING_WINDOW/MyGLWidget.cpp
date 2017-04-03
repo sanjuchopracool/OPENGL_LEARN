@@ -1,5 +1,8 @@
 #include "MyGLWidget.h"
 
+#include <OpenGLShaderProgram.h>
+#include <OpenGLShader.h>
+
 MyGLWidget::MyGLWidget()
     : GLWidget( "Sample App", 800, 600 )
 {
@@ -24,51 +27,6 @@ void generate_texture(float * data, int width, int height)
             data[(y * width + x) * 4 + 3] = 1.0f;
         }
     }
-}
-
-static const char * vs_source[] =
-{
-    "#version 420 core                                                              \n"
-    "                                                                               \n"
-    "void main(void)                                                                \n"
-    "{                                                                              \n"
-    "    const vec4 vertices[] = vec4[](vec4( 0.75, -0.75, 0.5, 1.0),               \n"
-    "                                   vec4(-0.75, -0.75, 0.5, 1.0),               \n"
-    "                                   vec4( 0.75,  0.75, 0.5, 1.0));              \n"
-    "                                                                               \n"
-    "    gl_Position = vertices[gl_VertexID];                                       \n"
-    "}                                                                              \n"
-};
-
-static const char * fs_source[] =
-{
-    "#version 430 core                                                              \n"
-    "                                                                               \n"
-    "uniform sampler2D s;                                                           \n"
-    "                                                                               \n"
-    "out vec4 color;                                                                \n"
-    "                                                                               \n"
-    "void main(void)                                                                \n"
-    "{                                                                              \n"
-    "    color = texture(s, gl_FragCoord.xy / textureSize(s, 0));                   \n"
-    "}                                                                              \n"
-};
-#include <string>
-static void print_shader_log(GLuint shader)
-{
-    std::string str;
-    GLint len;
-
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
-    if (len != 0)
-    {
-        str.resize(len);
-        glGetShaderInfoLog(shader, len, NULL, &str[0]);
-    }
-
-#ifdef _WIN32
-    OutputDebugStringA(str.c_str());
-#endif
 }
 
 void MyGLWidget::init()
@@ -106,23 +64,10 @@ void MyGLWidget::init()
     // Free the memory we allocated before - \GL now has our data
     delete [] data;
 
-    program = glCreateProgram();
-    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, fs_source, NULL);
-    glCompileShader(fs);
-
-    print_shader_log(fs);
-
-    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, vs_source, NULL);
-    glCompileShader(vs);
-
-    print_shader_log(vs);
-
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-
-    glLinkProgram(program);
+    mProgram.reset(new OpenGLShaderProgram());
+    mProgram->attachShader(OpenGLShader(OpenGLShader::ShaderType::Vertex, std::string("../Media/Shaders/Shader.vert")));
+    mProgram->attachShader(OpenGLShader(OpenGLShader::ShaderType::Fragment, std::string("../Media/Shaders/Shader.frag")));
+    mProgram->link();
 
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -134,6 +79,6 @@ void MyGLWidget::render()
     static const GLfloat green[] = { 0.0f, 0.25f, 0.0f, 1.0f };
     glClearBufferfv(GL_COLOR, 0, green);
 
-    glUseProgram(program);
+    mProgram->bind();
     glDrawArrays(GL_TRIANGLES, 0, 3);
 }
